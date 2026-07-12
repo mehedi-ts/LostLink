@@ -1,30 +1,6 @@
 import { Item } from "@/types/item";
-import { INITIAL_ITEMS } from "./mockData";
-
-const isBrowser = typeof window !== "undefined";
-
-// Delay helper to simulate network latency
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const getStoredItems = (): Item[] => {
-  if (!isBrowser) return INITIAL_ITEMS;
-  const stored = localStorage.getItem("lostlink_items");
-  if (!stored) {
-    localStorage.setItem("lostlink_items", JSON.stringify(INITIAL_ITEMS));
-    return INITIAL_ITEMS;
-  }
-  try {
-    return JSON.parse(stored);
-  } catch (e) {
-    return INITIAL_ITEMS;
-  }
-};
-
-const saveStoredItems = (items: Item[]): void => {
-  if (isBrowser) {
-    localStorage.setItem("lostlink_items", JSON.stringify(items));
-  }
-};
+import { getItems, getItemById } from "@/app/lib/api";
+import { createItem, updateItem, deleteItem, getMyItems } from "@/app/lib/actions";
 
 export const itemService = {
   /**
@@ -40,65 +16,7 @@ export const itemService = {
     page?: number;
     limit?: number;
   } = {}): Promise<{ items: Item[]; total: number; page: number; limit: number }> {
-    await delay(500);
-    const items = getStoredItems();
-
-    const query = params.query?.toLowerCase().trim() || "";
-    const itemType = params.itemType || "all";
-    const category = params.category || "";
-    const status = params.status || "all";
-    const location = params.location?.toLowerCase().trim() || "";
-    const sortBy = params.sortBy || "newest";
-    const page = params.page || 1;
-    const limit = params.limit || 12;
-
-    // Apply filtering
-    const filtered = items.filter((item) => {
-      // 1. Text Search (title & description)
-      if (query && !item.title.toLowerCase().includes(query) && !item.description.toLowerCase().includes(query)) {
-        return false;
-      }
-      // 2. Item Type (lost / found)
-      if (itemType !== "all" && item.itemType !== itemType) {
-        return false;
-      }
-      // 3. Category
-      if (category && item.category !== category) {
-        return false;
-      }
-      // 4. Status
-      if (status !== "all" && item.status !== status) {
-        return false;
-      }
-      // 5. Location
-      if (location && !item.location.toLowerCase().includes(location)) {
-        return false;
-      }
-      return true;
-    });
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      if (sortBy === "oldest") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      } else if (sortBy === "updated") {
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      } else {
-        // newest
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-    });
-
-    const total = filtered.length;
-    const startIndex = (page - 1) * limit;
-    const paginated = filtered.slice(startIndex, startIndex + limit);
-
-    return {
-      items: paginated,
-      total,
-      page,
-      limit,
-    };
+    return getItems(params);
   },
 
   /**
@@ -111,8 +29,9 @@ export const itemService = {
     categoryDistribution: { name: string; value: number }[];
     recentItems: Item[];
   }> {
-    await delay(300);
-    const items = getStoredItems();
+    // Fetch items with a large limit to compute stats locally
+    const response = await this.getItems({ limit: 1000 });
+    const items = response.items;
 
     const totalLost = items.filter((i) => i.itemType === "lost" && i.status === "active").length;
     const totalFound = items.filter((i) => i.itemType === "found" && i.status === "active").length;
@@ -148,20 +67,16 @@ export const itemService = {
    * Fetch details of a single item
    */
   async getItemById(id: string): Promise<Item | null> {
-    await delay(400);
-    const items = getStoredItems();
-    const found = items.find((item) => item._id === id);
-    return found || null;
+    return getItemById(id);
   },
 
   /**
    * Get related items (matching category, excluding current item ID, max 4)
    */
   async getRelatedItems(category: string, excludeId: string): Promise<Item[]> {
-    await delay(300);
-    const items = getStoredItems();
-    return items
-      .filter((item) => item.category === category && item._id !== excludeId && item.status === "active")
+    const response = await this.getItems({ category, limit: 10 });
+    return response.items
+      .filter((item) => item._id !== excludeId && item.status === "active")
       .slice(0, 4);
   },
 
@@ -172,74 +87,32 @@ export const itemService = {
     itemData: Omit<Item, "_id" | "createdAt" | "updatedAt" | "postedBy" | "status">,
     postedBy: string
   ): Promise<Item> {
-    await delay(600);
-    const items = getStoredItems();
-
-    const newItem: Item = {
-      ...itemData,
-      _id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      status: "active",
-      postedBy,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    items.unshift(newItem);
-    saveStoredItems(items);
-    return newItem;
+    return createItem(itemData, postedBy);
   },
 
   /**
    * Delete an item listing
    */
   async deleteItem(id: string, postedBy: string): Promise<boolean> {
-    await delay(500);
-    const items = getStoredItems();
-    const initialLength = items.length;
-
-    // Filter out item ensuring it was posted by the user
-    const updated = items.filter((item) => !(item._id === id && item.postedBy === postedBy));
-
-    if (updated.length === initialLength) {
-      return false; // Not found or unauthorized
-    }
-
-    saveStoredItems(updated);
-    return true;
+    return deleteItem(id);
   },
 
   /**
    * Retrieve posts created by a specific user
    */
   async getMyItems(postedBy: string): Promise<Item[]> {
-    await delay(450);
-    const items = getStoredItems();
-    return items.filter((item) => item.postedBy === postedBy);
+    return getMyItems(postedBy);
   },
 
   /**
    * Toggle item status (active <-> recovered)
    */
   async toggleItemStatus(id: string, postedBy: string): Promise<Item | null> {
-    await delay(400);
-    const items = getStoredItems();
-    let updatedItem: Item | null = null;
+    const item = await this.getItemById(id);
+    if (!item) return null;
 
-    const updated = items.map((item) => {
-      if (item._id === id && item.postedBy === postedBy) {
-        updatedItem = {
-          ...item,
-          status: item.status === "active" ? "recovered" : "active",
-          updatedAt: new Date().toISOString(),
-        };
-        return updatedItem;
-      }
-      return item;
-    });
-
-    if (updatedItem) {
-      saveStoredItems(updated);
-    }
-    return updatedItem;
+    const newStatus = item.status === "active" ? "recovered" : "active";
+    return updateItem(id, { status: newStatus });
   },
 };
+
