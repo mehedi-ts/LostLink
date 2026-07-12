@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
 import { useToast } from "@/context/ToastContext";
 import AuthForm from "@/components/features/auth/AuthForm";
-import DemoLoginButton from "@/components/features/auth/DemoLoginButton";
 import Card from "@/components/ui/Card";
-// ShieldCheck removed
+import { authClient } from "@/app/lib/auth-client";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -16,7 +15,7 @@ interface PageProps {
 export default function LoginPage({ searchParams }: PageProps) {
   const router = useRouter();
   const searchParamsVal = use(searchParams);
-  const { login, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -30,18 +29,26 @@ export default function LoginPage({ searchParams }: PageProps) {
   }, [isAuthenticated, router, redirectPath]);
 
   const handleLoginSubmit = async (data: Record<string, string | boolean>) => {
-    setLoading(true);
-    try {
-      const success = await login(data.email as string, data.password as string);
-      if (success) {
-        showToast("Welcome back! You have signed in successfully.", "success");
-        router.push(redirectPath);
+    await authClient.signIn.email(
+      {
+        email: data.email as string,
+        password: data.password as string,
+      },
+      {
+        onRequest: () => {
+          setLoading(true);
+        },
+        onSuccess: () => {
+          setLoading(false);
+          showToast("Welcome back! You have signed in successfully.", "success");
+          router.push(redirectPath);
+        },
+        onError: (ctx) => {
+          setLoading(false);
+          showToast(ctx.error.message || "Authentication failed. Please verify credentials.", "error");
+        },
       }
-    } catch {
-      showToast("Authentication failed. Please verify credentials.", "error");
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   return (
@@ -59,18 +66,11 @@ export default function LoginPage({ searchParams }: PageProps) {
         </div>
 
         {/* Card envelope */}
-        <Card hoverEffect={false} className="p-6 sm:p-8 bg-white border border-neutral-light shadow-md flex flex-col gap-6">
+        <Card hoverEffect={false} className="p-6 sm:p-8 bg-white border border-neutral-light shadow-md">
           <AuthForm mode="login" onSubmit={handleLoginSubmit} isLoading={loading} />
-          
-          <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-neutral-light"></div>
-            <span className="flex-shrink mx-3 text-[10px] font-extrabold text-neutral-mid uppercase tracking-widest">or</span>
-            <div className="flex-grow border-t border-neutral-light"></div>
-          </div>
-
-          <DemoLoginButton />
         </Card>
       </div>
     </div>
   );
 }
+

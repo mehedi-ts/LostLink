@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
-import { useToast } from "@/context/ToastContext";
 import AuthForm from "@/components/features/auth/AuthForm";
 import Card from "@/components/ui/Card";
+import { authClient } from "../lib/auth-client";
+
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, isAuthenticated } = useAuth();
-  const { showToast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
@@ -20,19 +20,16 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleRegisterSubmit = async (data: Record<string, string | boolean>) => {
-    setLoading(true);
-    try {
-      const success = await register(data.name as string, data.email as string);
-      if (success) {
-        showToast("Registration successful! Welcome to the community.", "success");
-        router.push("/dashboard");
-      }
-    } catch {
-      showToast("Registration failed. Please check validation rules.", "error");
-    } finally {
-      setLoading(false);
-    }
+  const handleRegisterSubmit = async (data: Record<string, any>) => {
+    await authClient.signUp.email(
+      {
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        callbackURL: "/dashboard",
+      },
+      
+    );
   };
 
   return (
