@@ -1,8 +1,11 @@
 "use server";
 
 import { Item } from "@/types/item";
+import { getTokenServer } from "./getTokenServer";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+
 
 async function extractError(res: Response, fallback: string): Promise<string> {
   try {
@@ -17,10 +20,12 @@ export async function createItem(
   itemData: Omit<Item, "_id" | "createdAt" | "updatedAt" | "postedBy" | "status">,
   postedBy: string
 ): Promise<Item> {
+  const token = await getTokenServer();
   const res = await fetch(`${API_BASE}/api/items`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ ...itemData, postedBy }),
   });
@@ -34,10 +39,12 @@ export async function createItem(
 }
 
 export async function updateItem(id: string, data: Partial<Item>): Promise<Item> {
+  const token = await getTokenServer();
   const res = await fetch(`${API_BASE}/api/items/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -51,8 +58,13 @@ export async function updateItem(id: string, data: Partial<Item>): Promise<Item>
 }
 
 export async function deleteItem(id: string): Promise<boolean> {
+  const token = await getTokenServer();
   const res = await fetch(`${API_BASE}/api/items/${id}`, {
     method: "DELETE",
+     headers: {
+       Authorization: `Bearer ${token}`,
+    },
+    
   });
 
   if (!res.ok) {
@@ -64,8 +76,13 @@ export async function deleteItem(id: string): Promise<boolean> {
 }
 
 export async function getMyItems(postedBy: string): Promise<Item[]> {
+  const token = await getTokenServer();
   const res = await fetch(`${API_BASE}/api/items/user/${postedBy}`, {
     cache: "no-store",
+     headers: {
+   
+       Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {
