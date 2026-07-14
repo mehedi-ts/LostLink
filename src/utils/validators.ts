@@ -52,6 +52,10 @@ export const validators = {
       message: "Title cannot exceed 80 characters",
     },
   },
+  itemShortDescription: {
+  required: "Short description is required",
+  maxLength: { value: 100, message: "Keep it under 100 characters" },
+},
   itemDescription: {
     required: "Description is required",
     minLength: {

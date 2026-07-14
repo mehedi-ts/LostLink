@@ -29,6 +29,7 @@ export default function AddItemPage() {
           itemType: data.itemType,
           title: data.title,
           category: data.category,
+          shortDescription: data.shortDescription,
           description: data.description,
           location: data.location,
           date: data.date,

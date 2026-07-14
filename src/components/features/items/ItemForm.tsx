@@ -14,6 +14,7 @@ interface ItemFormData {
   itemType: "lost" | "found";
   title: string;
   category: string;
+   shortDescription: string;
   description: string;
   location: string;
   date: string;
@@ -127,15 +128,28 @@ export const ItemForm: React.FC<ItemFormProps> = ({
         </div>
       </div>
 
-      {/* Description */}
-      <div>
-        <TextArea
-          label="Item Description"
-          placeholder="Describe unique characteristics, markings, brand, contents of the bag, or details that can prove ownership..."
-          error={errors.description?.message}
-          {...register("description", validators.itemDescription)}
-        />
-      </div>
+     {/* Short Description */}
+<div>
+  <Input
+    label="Short Description"
+    placeholder="e.g. Black wallet with keys inside"
+    error={errors.shortDescription?.message}
+    {...register("shortDescription", validators.itemShortDescription)}
+  />
+  <p className="text-[11px] text-neutral-mid mt-1">
+    One-line summary shown on listing cards (max ~100 characters).
+  </p>
+</div>
+
+{/* Full Description */}
+<div>
+  <TextArea
+    label="Full Description"
+    placeholder="Describe unique characteristics, markings, brand, contents of the bag, or details that can prove ownership..."
+    error={errors.description?.message}
+    {...register("description", validators.itemDescription)}
+  />
+</div>
 
       {/* Image Preview & URL */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
