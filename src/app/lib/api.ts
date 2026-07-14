@@ -1,6 +1,6 @@
 import { Item } from "@/types/item";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export async function getItems(params: {
   query?: string;
