@@ -50,14 +50,14 @@ export default function ListingsPage({ searchParams }: PageProps) {
   }, [debouncedSearch, setFilters]);
 
   // If initial search param changes (navigated from home category)
-  useEffect(() => {
-    if (categoryParam !== filters.category || typeParam !== filters.itemType) {
-      setFilters({
-        category: categoryParam,
-        itemType: typeParam || "all",
-      });
-    }
-  }, [categoryParam, typeParam, filters.category, filters.itemType, setFilters]);
+  // useEffect(() => {
+  //   if (categoryParam !== filters.category || typeParam !== filters.itemType) {
+  //     setFilters({
+  //       category: categoryParam,
+  //       itemType: typeParam || "all",
+  //     });
+  //   }
+  // }, [categoryParam, typeParam, filters.category, filters.itemType, setFilters]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
