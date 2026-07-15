@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { itemService } from "@/services/itemService";
 import { Item } from "@/types/item";
 import ItemCard from "@/components/features/items/ItemCard";
@@ -22,29 +22,29 @@ import {
 } from "lucide-react";
 
 // Hero animation variants
-const heroContainer = {
+const heroContainer: Variants = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.12 },
   },
 };
 
-const heroFadeUp = {
+const heroFadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
-const heroCard = {
+const heroCard: Variants = {
   hidden: { opacity: 0, scale: 0.9, y: 16 },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
