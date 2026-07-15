@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { itemService } from "@/services/itemService";
 import { Item } from "@/types/item";
 import ItemCard from "@/components/features/items/ItemCard";
@@ -19,6 +20,33 @@ import {
   Users,
   Compass,
 } from "lucide-react";
+
+// Hero animation variants
+const heroContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12 },
+  },
+};
+
+const heroFadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const heroCard = {
+  hidden: { opacity: 0, scale: 0.9, y: 16 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export default function Home() {
   const [stats, setStats] = useState<{
@@ -106,23 +134,40 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Column */}
-            <div className="lg:col-span-7 flex flex-col gap-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-extrabold w-fit mx-auto lg:mx-0 shadow-sm border border-primary/10">
+            <motion.div
+              className="lg:col-span-7 flex flex-col gap-6 text-center lg:text-left"
+              variants={heroContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.div
+                variants={heroFadeUp}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-extrabold w-fit mx-auto lg:mx-0 shadow-sm border border-primary/10"
+              >
                 <Sparkles className="w-3.5 h-3.5" />
                 COMMUNITY DRIVEN LOST & FOUND
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-dark tracking-tight leading-none">
+              </motion.div>
+              <motion.h1
+                variants={heroFadeUp}
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-dark tracking-tight leading-none"
+              >
                 Reconnecting You With Your{" "}
                 <span className="text-primary bg-gradient-to-r from-primary to-indigo-700 bg-clip-text text-transparent">
                   Belongings
                 </span>
-              </h1>
-              <p className="text-base sm:text-lg text-neutral-mid leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              </motion.h1>
+              <motion.p
+                variants={heroFadeUp}
+                className="text-base sm:text-lg text-neutral-mid leading-relaxed max-w-2xl mx-auto lg:mx-0"
+              >
                 LostLink is a modern lost-and-found community platform designed to bridge the gap between lost items and their rightful owners. Report, search, and recover easily.
-              </p>
+              </motion.p>
 
               {/* Action CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4">
+              <motion.div
+                variants={heroFadeUp}
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4"
+              >
                 <Link href="/items/add" className="w-full sm:w-auto">
                   <Button
                     size="lg"
@@ -142,39 +187,64 @@ export default function Home() {
                     Search Database
                   </Button>
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Right Hero Column: Illustration Grid */}
             <div className="lg:col-span-5 hidden lg:block">
               <div className="relative">
                 {/* Visual grid cards */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white rounded-card shadow-md p-5 border border-neutral-light transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                <motion.div
+                  className="grid grid-cols-2 gap-4"
+                  variants={heroContainer}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.div
+                    variants={heroCard}
+                    whileHover={{ rotate: 0, y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="bg-white rounded-card shadow-md p-5 border border-neutral-light -rotate-2"
+                  >
                     <span className="text-3xl block mb-2">🎒</span>
                     <span className="text-xs font-bold text-secondary uppercase">Lost</span>
                     <h4 className="font-bold text-neutral-dark text-sm mt-0.5">Osprey Backpack</h4>
                     <p className="text-[10px] text-neutral-mid line-clamp-2 mt-1">Grey backpack left on northbound N Train...</p>
-                  </div>
-                  <div className="bg-white rounded-card shadow-md p-5 border border-neutral-light transform translate-y-6 rotate-3 hover:rotate-0 transition-transform duration-300">
+                  </motion.div>
+                  <motion.div
+                    variants={heroCard}
+                    whileHover={{ rotate: 0, y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="bg-white rounded-card shadow-md p-5 border border-neutral-light translate-y-6 rotate-3"
+                  >
                     <span className="text-3xl block mb-2">🐶</span>
                     <span className="text-xs font-bold text-accent uppercase">Found</span>
                     <h4 className="font-bold text-neutral-dark text-sm mt-0.5">Golden Pup Max</h4>
                     <p className="text-[10px] text-neutral-mid line-clamp-2 mt-1">Found friendly Golden retriever puppy near...</p>
-                  </div>
-                  <div className="bg-white rounded-card shadow-md p-5 border border-neutral-light transform -translate-y-2 -rotate-1 hover:rotate-0 transition-transform duration-300">
+                  </motion.div>
+                  <motion.div
+                    variants={heroCard}
+                    whileHover={{ rotate: 0, y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="bg-white rounded-card shadow-md p-5 border border-neutral-light -translate-y-2 -rotate-1"
+                  >
                     <span className="text-3xl block mb-2">🔑</span>
                     <span className="text-xs font-bold text-accent uppercase">Found</span>
                     <h4 className="font-bold text-neutral-dark text-sm mt-0.5">Honda Key Fob</h4>
                     <p className="text-[10px] text-neutral-mid line-clamp-2 mt-1">Found key fob with brass Totoro ring on...</p>
-                  </div>
-                  <div className="bg-white rounded-card shadow-md p-5 border border-neutral-light transform translate-y-4 rotate-2 hover:rotate-0 transition-transform duration-300">
+                  </motion.div>
+                  <motion.div
+                    variants={heroCard}
+                    whileHover={{ rotate: 0, y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="bg-white rounded-card shadow-md p-5 border border-neutral-light translate-y-4 rotate-2"
+                  >
                     <span className="text-3xl block mb-2">💻</span>
                     <span className="text-xs font-bold text-secondary uppercase">Lost</span>
                     <h4 className="font-bold text-neutral-dark text-sm mt-0.5">MacBook Air M2</h4>
                     <p className="text-[10px] text-neutral-mid line-clamp-2 mt-1">Slipped out of backpack near central library...</p>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </div>
             </div>
           </div>
